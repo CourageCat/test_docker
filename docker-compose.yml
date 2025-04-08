@@ -1,0 +1,18 @@
+services:
+  edusourcedb:
+    image: mcr.microsoft.com/mssql/server:2019-latest  # This will download the image if not present locally
+  distributedcache:
+    image: redis
+  edusource.api:
+    image: ${DOCKER_REGISTRY-}edusourceapi
+    build:
+      context: .
+      dockerfile: src/EduSource.API/Dockerfile
+
+  edusource.client:
+    image: edusourceclient
+    build:
+      context: ./edusource_client
+
+volumes:
+  sqlserver_edusourcedb:

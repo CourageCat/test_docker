@@ -1,0 +1,89 @@
+version: '3.7'
+
+services:
+  edusourcedb:
+    container_name: edusourcedb
+    env_file:
+      - .env
+    environment:
+      - ACCEPT_EULA=${ACCEPT_EULA}
+      - SA_PASSWORD=${SA_PASSWORD}
+    restart: always
+    ports:
+      - "1435:1433"
+    volumes:
+      - sqlserver_edusourcedb:/var/opt/mssql
+
+  distributedcache:
+    image: redis:latest  # This will download the image if not present locally
+    container_name: distributedcache
+    restart: always
+    ports:
+      - "6381:6379"
+
+  edusource.api:
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_HTTP_PORTS=${ASPNETCORE_HTTP_PORTS}
+      - ASPNETCORE_HTTPS_PORTS=${ASPNETCORE_HTTPS_PORTS}
+      - ConnectionStrings__ConnectionStrings=Server=edusourcedb;Database=EduSource;User Id=sa;Password=${SA_PASSWORD};Encrypt=False;TrustServerCertificate=True
+      - AccountAdmin__Email=admin@example.com
+      - AccountAdmin__Password=adminpassword
+      - AccountStaff__Email=staff@example.com
+      - AccountStaff__Password=staffpassword
+      - RedisConfiguration__Enabled=true
+      - RedisConfiguration__ConnectionString=distributedcache:6381
+      - ClientConfiguration__Url=${CLIENT_URL}
+      - ClientConfiguration__VerifyEmail=/active/active-auth-signup
+      - ClientConfiguration__VerifyChangeEmail=/active/active-change-email
+      - ClientConfiguration__VerifyChangePassword=/active/active-change-password
+      - ClientConfiguration__OrderSuccess=/active/order-success
+      - ClientConfiguration__OrderFail=/active/order-fail
+      - ClientConfiguration__OrderRequest=/hiring-post-detail
+       - ServerConfiguration__Url=${SERVER_URL}
+
+      - EmailConfiguration__EmailHost=smtp.gmail.com
+      - EmailConfiguration__EmailUsername=${EMAIL_USERNAME}
+      - EmailConfiguration__EmailPassword=${EMAIL_PASSWORD}
+      - UserConfiguration__DefaultMaleAvatar=https://example.com/male_avatar.jpg
+      - UserConfiguration__DefaultFemaleAvatar=https://example.com/female_avatar.jpg
+      - AuthenticationConfiguration__Issuer=${ISSUER}
+      - AuthenticationConfiguration__Audience=${AUDIENCE}
+      - AuthenticationConfiguration__AccessSecretToken=${ACCESS_SECRET_TOKEN}
+      - AuthenticationConfiguration__RefreshSecretToken=${REFRESH_SECRET_TOKEN}
+      - AuthenticationConfiguration__AccessTokenExpMinute=${ACCESS_TOKEN_EXP_MINUTE}
+      - AuthenticationConfiguration__RefreshTokenExpMinute=${REFRESH_TOKEN_EXP_MINUTE}
+      - CloudinarySetting__CloudName=${CLOUDINARY_NAME}
+      - CloudinarySetting__ApiKey=${CLOUDINARY_API_KEY}
+      - CloudinarySetting__ApiSecret=${CLOUDINARY_API_SECRET}
+      - CloudinarySetting__Folder=${CLOUDINARY_FOLDER}
+       - ServerConfiguration__Url=${SERVER_URL}
+
+      - PayOSSetting__ClientId=${PAYOS_CLIENT_ID}
+      - PayOSSetting__ApiKey=${PAYOS_API_KEY}
+      - PayOSSetting__ChecksumKey=${PAYOS_CHECK_SUM_KEY}
+      - PayOSSetting__Success=/success
+      - PayOSSetting__Error=/error
+      - PayOSSetting__RequestSuccess=/requestsuccess
+      - PayOSSetting__RequestError=/requesterror
+    depends_on:
+      - edusourcedb
+      - distributedcache
+    ports:
+      - "6000:${ASPNETCORE_HTTP_PORTS}"
+      - "6060:${ASPNETCORE_HTTPS_PORTS}"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  edusource.client:
+    container_name: edusource.client
+    # env_file:
+    #   - .env
+    ports:
+      - "3000:3000"
+
+volumes:
+  sqlserver_edusourcedb:
