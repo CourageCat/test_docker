@@ -68,6 +68,9 @@ services:
       - PayOSSetting__Error=/error
       - PayOSSetting__RequestSuccess=/requestsuccess
       - PayOSSetting__RequestError=/requesterror
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=${ASPNETCORE_Kestrel__Certificates__Default__Path}
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${ASPNETCORE_Kestrel__Certificates__Default__Password}
+
     depends_on:
       - edusourcedb
       - distributedcache

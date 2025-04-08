@@ -4,13 +4,13 @@ services:
   distributedcache:
     image: redis
   edusource.api:
-    image: ${DOCKER_REGISTRY-}edusourceapi
+    image: couragecat/edusourceapi:latest
     build:
       context: .
       dockerfile: src/EduSource.API/Dockerfile
 
   edusource.client:
-    image: edusourceclient
+    image: couragecat/edusourceclient:latest
     build:
       context: ./edusource_client
 
